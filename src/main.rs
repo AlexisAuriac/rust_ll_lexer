@@ -26,53 +26,48 @@ enum ExpectSym {
     NtsSign,
 }
 
-fn get_symbol_nbr(mut c: char, s: &mut String) -> Symbol {
+fn get_symbol_nbr(s: &mut String) -> (Symbol, usize) {
     let mut nb = 0;
+    let mut size = 0;
 
-    loop {
-        nb = nb * 10 + c.to_digit(10).unwrap();
-
-        match s.chars().next() {
-            None => break,
-            Some(first) => {
-                if !first.is_digit(10) {
-                    break;
-                }
-            }
+    for c in s.chars() {
+        if !c.is_digit(10) {
+            break;
         }
 
-        c = s.remove(0);
+        nb = nb * 10 + c.to_digit(10).unwrap();
+        size += 1;
     }
 
-    return Symbol::TsNbr(nb);
+    return (Symbol::TsNbr(nb), size);
 }
 
-fn get_symbol(s: &mut String) -> Symbol {
+fn get_symbol(s: &mut String) -> (Symbol, usize) {
     if s.len() == 0 {
-        return Symbol::TsEos;
+        return (Symbol::TsEos, 0);
     }
 
-    let c = s.remove(0);
+    let c = s.chars().next().unwrap();
 
     return match c {
-        '(' => Symbol::TsLParens,
-        ')' => Symbol::TsRParens,
-        '+' => Symbol::TsPlus,
-        '-' => Symbol::TsLess,
-        '*' => Symbol::TsTimes,
-        '0'...'9' => get_symbol_nbr(c, s),
-        _ => Symbol::TsInvalid,
+        '(' => (Symbol::TsLParens, 1),
+        ')' => (Symbol::TsRParens, 1),
+        '+' => (Symbol::TsPlus, 1),
+        '-' => (Symbol::TsLess, 1),
+        '*' => (Symbol::TsTimes, 1),
+        '0'...'9' => get_symbol_nbr(s),
+        _ => (Symbol::TsInvalid, 1),
     };
 }
 
 struct Rule {
     pub sym1: ExpectSym,
     pub sym2: ExpectSym,
-    pub res: Vec<ExpectSym>,
+    pub res: Vec<(ExpectSym, bool)>,
 }
 
 impl Rule {
-    fn new(sym1: ExpectSym, sym2: ExpectSym, res: Vec<ExpectSym>) -> Rule {
+    fn new(sym1: ExpectSym, sym2: ExpectSym, res: Vec<(ExpectSym, bool)>) -> Rule {
         Rule { sym1, sym2, res }
     }
 }
@@ -102,12 +97,12 @@ fn sym_to_expect(sym: &Symbol) -> ExpectSym {
 }
 
 struct RuleTable {
-    table: HashMap<(ExpectSym, ExpectSym), Vec<ExpectSym>>,
+    table: HashMap<(ExpectSym, ExpectSym), Vec<(ExpectSym, bool)>>,
 }
 
 impl RuleTable {
     fn new(rules: Vec<Rule>) -> RuleTable {
-        let mut table: HashMap<(ExpectSym, ExpectSym), Vec<ExpectSym>> = HashMap::new();
+        let mut table: HashMap<(ExpectSym, ExpectSym), Vec<(ExpectSym, bool)>> = HashMap::new();
 
         for rule in rules {
             table.insert((rule.sym1, rule.sym2), rule.res);
@@ -116,66 +111,86 @@ impl RuleTable {
         return RuleTable { table };
     }
 
-    fn get_res(self: &RuleTable, sym1: ExpectSym, sym2: ExpectSym) -> &Vec<ExpectSym> {
-        return &self.table[&(sym1, sym2)];
+    fn get_res(
+        self: &RuleTable,
+        sym1: ExpectSym,
+        sym2: ExpectSym,
+    ) -> Option<&Vec<(ExpectSym, bool)>> {
+        return self.table.get(&(sym1, sym2));
     }
 }
 
 fn get_rt() -> RuleTable {
     return RuleTable::new(vec![
-        Rule::new(ExpectSym::NtsExpr, ExpectSym::TsNbr, vec![ExpectSym::TsNbr]),
+        Rule::new(
+            ExpectSym::NtsExpr,
+            ExpectSym::TsNbr,
+            vec![(ExpectSym::NtsSign, true), (ExpectSym::TsNbr, false)],
+        ),
         Rule::new(
             ExpectSym::NtsExpr,
             ExpectSym::TsLParens,
             vec![
-                ExpectSym::TsRParens,
-                ExpectSym::NtsExpr,
-                ExpectSym::NtsSign,
-                ExpectSym::NtsExpr,
-                ExpectSym::TsLParens,
+                (ExpectSym::NtsSign, true),
+                (ExpectSym::TsRParens, false),
+                (ExpectSym::NtsExpr, false),
+                (ExpectSym::TsLParens, false),
             ],
         ),
         Rule::new(
             ExpectSym::NtsSign,
             ExpectSym::TsPlus,
-            vec![ExpectSym::TsPlus],
+            vec![(ExpectSym::NtsExpr, false), (ExpectSym::TsPlus, false)],
         ),
         Rule::new(
             ExpectSym::NtsSign,
             ExpectSym::TsLess,
-            vec![ExpectSym::TsLess],
+            vec![(ExpectSym::NtsExpr, false), (ExpectSym::TsLess, false)],
         ),
         Rule::new(
             ExpectSym::NtsSign,
             ExpectSym::TsTimes,
-            vec![ExpectSym::TsTimes],
+            vec![(ExpectSym::NtsExpr, false), (ExpectSym::TsTimes, false)],
         ),
     ]);
 }
 
 fn lexer(mut s: String, rt: RuleTable) -> Vec<Symbol> {
     let mut syms: Vec<Symbol> = vec![];
-    let mut sym_stack: Vec<ExpectSym> = vec![ExpectSym::NtsExpr];
+    let mut sym_stack: Vec<(ExpectSym, bool)> = vec![(ExpectSym::NtsExpr, false)];
 
     while s.len() != 0 {
-        let sym = get_symbol(&mut s);
+        let (sym, size) = get_symbol(&mut s);
         let expect = sym_to_expect(&sym);
-        let top = *sym_stack.last().unwrap();
+        let (top, opt) = *sym_stack.last().unwrap();
 
-        if expect == *sym_stack.last().unwrap() {
+        if expect == top {
             sym_stack.pop();
+            s.replace_range(..size, "");
+            syms.push(sym);
         } else {
-            let res_syms = rt.get_res(top, expect);
+            match rt.get_res(top, expect) {
+                Some(res_syms) => {
+                    sym_stack.pop();
 
-            sym_stack.pop();
+                    for res in res_syms {
+                        sym_stack.push(*res);
+                    }
 
-            for res in res_syms {
-                sym_stack.push(*res);
+                    sym_stack.pop();
+                    s.replace_range(..size, "");
+                    syms.push(sym);
+                }
+                None => {
+                    if opt {
+                        sym_stack.pop();
+                    } else {
+                        eprintln!("error");
+                        std::process::exit(1);
+                    }
+                }
             }
-
-            sym_stack.pop();
         }
-        syms.push(sym);
     }
 
     return syms;
