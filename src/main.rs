@@ -159,7 +159,7 @@ fn lexer(mut s: String, rt: RuleTable) -> Vec<Symbol> {
     let mut syms: Vec<Symbol> = vec![];
     let mut sym_stack: Vec<(ExpectSym, bool)> = vec![(ExpectSym::NtsExpr, false)];
 
-    while s.len() != 0 {
+    while sym_stack.len() != 0 {
         let (sym, size) = get_symbol(&mut s);
         let expect = sym_to_expect(&sym);
         let (top, opt) = *sym_stack.last().unwrap();
@@ -185,7 +185,11 @@ fn lexer(mut s: String, rt: RuleTable) -> Vec<Symbol> {
                     if opt {
                         sym_stack.pop();
                     } else {
-                        eprintln!("error");
+                        if expect == ExpectSym::TsEos {
+                            eprintln!("Error: Incomplete syntax");
+                        } else {
+                            eprintln!("Error: Invalid syntax");
+                        }
                         std::process::exit(1);
                     }
                 }
