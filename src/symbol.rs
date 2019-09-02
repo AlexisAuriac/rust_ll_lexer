@@ -1,10 +1,12 @@
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Symbol {
     TsLParens,
     TsRParens,
     TsPlus,
     TsLess,
     TsTimes,
+    TsDivide,
+    TsModulo,
     TsNbr(u32),
     TsEos,
     TsInvalid,
@@ -17,6 +19,8 @@ pub enum ExpectSym {
     TsPlus,
     TsLess,
     TsTimes,
+    TsDivide,
+    TsModulo,
     TsNbr,
     TsEos,
     TsInvalid,
@@ -53,6 +57,8 @@ pub fn get_symbol(s: &mut String) -> (Symbol, usize) {
         '+' => (Symbol::TsPlus, 1),
         '-' => (Symbol::TsLess, 1),
         '*' => (Symbol::TsTimes, 1),
+        '/' => (Symbol::TsDivide, 1),
+        '%' => (Symbol::TsModulo, 1),
         '0'...'9' => get_symbol_nbr(s),
         _ => (Symbol::TsInvalid, 1),
     };
@@ -65,6 +71,8 @@ pub fn sym_to_expect(sym: &Symbol) -> ExpectSym {
         Symbol::TsPlus => ExpectSym::TsPlus,
         Symbol::TsLess => ExpectSym::TsLess,
         Symbol::TsTimes => ExpectSym::TsTimes,
+        Symbol::TsDivide => ExpectSym::TsDivide,
+        Symbol::TsModulo => ExpectSym::TsModulo,
         Symbol::TsNbr { .. } => ExpectSym::TsNbr,
         Symbol::TsEos => ExpectSym::TsEos,
         Symbol::TsInvalid => ExpectSym::TsInvalid,
