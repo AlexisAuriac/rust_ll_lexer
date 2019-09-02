@@ -9,13 +9,12 @@ pub fn get_rt() -> RuleTable {
         Rule::new(
             ExpectSym::NtsExpr,
             ExpectSym::TsNbr,
-            vec![(ExpectSym::TsNbr, false), (ExpectSym::NtsSign, true)],
+            vec![(ExpectSym::NtsSign, true)],
         ),
         Rule::new(
             ExpectSym::NtsExpr,
             ExpectSym::TsLParens,
             vec![
-                (ExpectSym::TsLParens, false),
                 (ExpectSym::NtsExpr, false),
                 (ExpectSym::TsRParens, false),
                 (ExpectSym::NtsSign, true),
@@ -24,27 +23,27 @@ pub fn get_rt() -> RuleTable {
         Rule::new(
             ExpectSym::NtsSign,
             ExpectSym::TsPlus,
-            vec![(ExpectSym::TsPlus, false), (ExpectSym::NtsExpr, false)],
+            vec![(ExpectSym::NtsExpr, false)],
         ),
         Rule::new(
             ExpectSym::NtsSign,
             ExpectSym::TsLess,
-            vec![(ExpectSym::TsLess, false), (ExpectSym::NtsExpr, false)],
+            vec![(ExpectSym::NtsExpr, false)],
         ),
         Rule::new(
             ExpectSym::NtsSign,
             ExpectSym::TsTimes,
-            vec![(ExpectSym::TsTimes, false), (ExpectSym::NtsExpr, false)],
+            vec![(ExpectSym::NtsExpr, false)],
         ),
         Rule::new(
             ExpectSym::NtsSign,
             ExpectSym::TsDivide,
-            vec![(ExpectSym::TsDivide, false), (ExpectSym::NtsExpr, false)],
+            vec![(ExpectSym::NtsExpr, false)],
         ),
         Rule::new(
             ExpectSym::NtsSign,
             ExpectSym::TsModulo,
-            vec![(ExpectSym::TsModulo, false), (ExpectSym::NtsExpr, false)],
+            vec![(ExpectSym::NtsExpr, false)],
         ),
     ]);
 }
@@ -71,7 +70,6 @@ pub fn lexer(mut s: String, rt: RuleTable) -> Result<Vec<Symbol>, String> {
                         sym_stack.push(*res);
                     }
 
-                    sym_stack.pop();
                     s.replace_range(..size, "");
                     syms.push(sym);
                 }
