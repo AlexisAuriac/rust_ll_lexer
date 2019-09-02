@@ -91,11 +91,10 @@ fn lexer(mut s: String, rt: RuleTable) -> Vec<Symbol> {
                         sym_stack.pop();
                     } else {
                         if expect == ExpectSym::TsEos {
-                            eprintln!("Error: Incomplete syntax");
+                            panic!("Error: Incomplete syntax");
                         } else {
-                            eprintln!("Error: Invalid syntax");
+                            panic!("Error: Invalid syntax");
                         }
-                        std::process::exit(1);
                     }
                 }
             }
@@ -237,5 +236,29 @@ mod tests {
                 Symbol::TsRParens,
             ]
         );
+    }
+
+    #[test]
+    #[should_panic]
+    fn error_no_end_bracket() {
+        lexer(String::from("(1"), get_rt());
+    }
+
+    #[test]
+    #[should_panic]
+    fn error_empty_brackets() {
+        lexer(String::from("()"), get_rt());
+    }
+
+    #[test]
+    #[should_panic]
+    fn error_no_2nd_operand() {
+        lexer(String::from("1+"), get_rt());
+    }
+
+    #[test]
+    #[should_panic]
+    fn error_too_large_number() {
+        lexer(String::from("12345678901234567890"), get_rt());
     }
 }

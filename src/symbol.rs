@@ -40,15 +40,13 @@ fn get_symbol_nbr(s: &mut String) -> (Symbol, usize) {
         if let (nb2, false) = nb.overflowing_mul(10) {
             nb = nb2;
         } else {
-            eprintln!("Error: Too large number");
-            std::process::exit(1);
+            panic!("Error: Too large number");
         }
 
         if let (nb2, false) = nb.overflowing_add(c.to_digit(10).unwrap()) {
             nb = nb2;
         } else {
-            eprintln!("Error: Too large number");
-            std::process::exit(1);
+            panic!("Error: Too large number");
         }
 
         size += 1;
