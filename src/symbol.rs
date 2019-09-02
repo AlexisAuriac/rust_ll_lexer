@@ -29,7 +29,7 @@ pub enum ExpectSym {
 }
 
 fn get_symbol_nbr(s: &mut String) -> (Symbol, usize) {
-    let mut nb = 0;
+    let mut nb: u32 = 0;
     let mut size = 0;
 
     for c in s.chars() {
@@ -37,7 +37,20 @@ fn get_symbol_nbr(s: &mut String) -> (Symbol, usize) {
             break;
         }
 
-        nb = nb * 10 + c.to_digit(10).unwrap();
+        if let (nb2, false) = nb.overflowing_mul(10) {
+            nb = nb2;
+        } else {
+            eprintln!("Error: Too large number");
+            std::process::exit(1);
+        }
+
+        if let (nb2, false) = nb.overflowing_add(c.to_digit(10).unwrap()) {
+            nb = nb2;
+        } else {
+            eprintln!("Error: Too large number");
+            std::process::exit(1);
+        }
+
         size += 1;
     }
 
