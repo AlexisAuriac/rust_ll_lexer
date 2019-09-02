@@ -28,7 +28,7 @@ pub enum ExpectSym {
     NtsSign,
 }
 
-fn get_symbol_nbr(s: &mut String) -> (Symbol, usize) {
+fn get_symbol_nbr(s: &mut String) -> Result<(Symbol, usize), String> {
     let mut nb: u32 = 0;
     let mut size = 0;
 
@@ -40,38 +40,38 @@ fn get_symbol_nbr(s: &mut String) -> (Symbol, usize) {
         if let (nb2, false) = nb.overflowing_mul(10) {
             nb = nb2;
         } else {
-            panic!("Error: Too large number");
+            return Err("Error: Too large number".to_string());
         }
 
         if let (nb2, false) = nb.overflowing_add(c.to_digit(10).unwrap()) {
             nb = nb2;
         } else {
-            panic!("Error: Too large number");
+            return Err("Error: Too large number".to_string());
         }
 
         size += 1;
     }
 
-    return (Symbol::TsNbr(nb), size);
+    return Ok((Symbol::TsNbr(nb), size));
 }
 
-pub fn get_symbol(s: &mut String) -> (Symbol, usize) {
+pub fn get_symbol(s: &mut String) -> Result<(Symbol, usize), String> {
     if s.len() == 0 {
-        return (Symbol::TsEos, 0);
+        return Ok((Symbol::TsEos, 0));
     }
 
     let c = s.chars().next().unwrap();
 
     return match c {
-        '(' => (Symbol::TsLParens, 1),
-        ')' => (Symbol::TsRParens, 1),
-        '+' => (Symbol::TsPlus, 1),
-        '-' => (Symbol::TsLess, 1),
-        '*' => (Symbol::TsTimes, 1),
-        '/' => (Symbol::TsDivide, 1),
-        '%' => (Symbol::TsModulo, 1),
+        '(' => Ok((Symbol::TsLParens, 1)),
+        ')' => Ok((Symbol::TsRParens, 1)),
+        '+' => Ok((Symbol::TsPlus, 1)),
+        '-' => Ok((Symbol::TsLess, 1)),
+        '*' => Ok((Symbol::TsTimes, 1)),
+        '/' => Ok((Symbol::TsDivide, 1)),
+        '%' => Ok((Symbol::TsModulo, 1)),
         '0'...'9' => get_symbol_nbr(s),
-        _ => (Symbol::TsInvalid, 1),
+        _ => Ok((Symbol::TsInvalid, 1)),
     };
 }
 

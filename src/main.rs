@@ -60,12 +60,12 @@ fn get_rt() -> RuleTable {
     ]);
 }
 
-fn lexer(mut s: String, rt: RuleTable) -> Vec<Symbol> {
+fn lexer(mut s: String, rt: RuleTable) -> Result<Vec<Symbol>, String> {
     let mut syms: Vec<Symbol> = vec![];
     let mut sym_stack: Vec<(ExpectSym, bool)> = vec![(ExpectSym::NtsExpr, false)];
 
     while sym_stack.len() != 0 {
-        let (sym, size) = get_symbol(&mut s);
+        let (sym, size) = get_symbol(&mut s)?;
         let expect = sym_to_expect(&sym);
         let (top, opt) = *sym_stack.last().unwrap();
 
@@ -91,9 +91,9 @@ fn lexer(mut s: String, rt: RuleTable) -> Vec<Symbol> {
                         sym_stack.pop();
                     } else {
                         if expect == ExpectSym::TsEos {
-                            panic!("Error: Incomplete syntax");
+                            return Err("Error: Incomplete syntax".to_string());
                         } else {
-                            panic!("Error: Invalid syntax");
+                            return Err("Error: Invalid syntax".to_string());
                         }
                     }
                 }
@@ -101,7 +101,7 @@ fn lexer(mut s: String, rt: RuleTable) -> Vec<Symbol> {
         }
     }
 
-    return syms;
+    return Ok(syms);
 }
 
 fn main() {
@@ -114,35 +114,41 @@ mod tests {
 
     #[test]
     fn single_value() {
-        assert_eq!(lexer(String::from("1"), get_rt()), vec![Symbol::TsNbr(1)]);
+        assert_eq!(
+            lexer(String::from("1"), get_rt()),
+            Ok(vec![Symbol::TsNbr(1)])
+        );
     }
 
     #[test]
     fn multi_digit_nbr() {
-        assert_eq!(lexer(String::from("12"), get_rt()), vec![Symbol::TsNbr(12)]);
+        assert_eq!(
+            lexer(String::from("12"), get_rt()),
+            Ok(vec![Symbol::TsNbr(12)])
+        );
     }
 
     #[test]
     fn simple_operation() {
         assert_eq!(
             lexer(String::from("12+3"), get_rt()),
-            vec![Symbol::TsNbr(12), Symbol::TsPlus, Symbol::TsNbr(3)]
+            Ok(vec![Symbol::TsNbr(12), Symbol::TsPlus, Symbol::TsNbr(3)])
         );
         assert_eq!(
             lexer(String::from("12-1234"), get_rt()),
-            vec![Symbol::TsNbr(12), Symbol::TsLess, Symbol::TsNbr(1234)]
+            Ok(vec![Symbol::TsNbr(12), Symbol::TsLess, Symbol::TsNbr(1234)])
         );
         assert_eq!(
             lexer(String::from("4*32"), get_rt()),
-            vec![Symbol::TsNbr(4), Symbol::TsTimes, Symbol::TsNbr(32)]
+            Ok(vec![Symbol::TsNbr(4), Symbol::TsTimes, Symbol::TsNbr(32)])
         );
         assert_eq!(
             lexer(String::from("12/4"), get_rt()),
-            vec![Symbol::TsNbr(12), Symbol::TsDivide, Symbol::TsNbr(4)]
+            Ok(vec![Symbol::TsNbr(12), Symbol::TsDivide, Symbol::TsNbr(4)])
         );
         assert_eq!(
             lexer(String::from("12%4"), get_rt()),
-            vec![Symbol::TsNbr(12), Symbol::TsModulo, Symbol::TsNbr(4)]
+            Ok(vec![Symbol::TsNbr(12), Symbol::TsModulo, Symbol::TsNbr(4)])
         );
     }
 
@@ -150,7 +156,7 @@ mod tests {
     fn multiple_operations() {
         assert_eq!(
             lexer(String::from("10+15-10*13+6/3%4"), get_rt()),
-            vec![
+            Ok(vec![
                 Symbol::TsNbr(10),
                 Symbol::TsPlus,
                 Symbol::TsNbr(15),
@@ -164,7 +170,7 @@ mod tests {
                 Symbol::TsNbr(3),
                 Symbol::TsModulo,
                 Symbol::TsNbr(4),
-            ]
+            ])
         );
     }
 
@@ -172,21 +178,21 @@ mod tests {
     fn simple_brackets() {
         assert_eq!(
             lexer(String::from("(1)"), get_rt()),
-            vec![Symbol::TsLParens, Symbol::TsNbr(1), Symbol::TsRParens,]
+            Ok(vec![Symbol::TsLParens, Symbol::TsNbr(1), Symbol::TsRParens])
         );
         assert_eq!(
             lexer(String::from("(1+2)"), get_rt()),
-            vec![
+            Ok(vec![
                 Symbol::TsLParens,
                 Symbol::TsNbr(1),
                 Symbol::TsPlus,
                 Symbol::TsNbr(2),
                 Symbol::TsRParens,
-            ]
+            ])
         );
         assert_eq!(
             lexer(String::from("(1+2)+3"), get_rt()),
-            vec![
+            Ok(vec![
                 Symbol::TsLParens,
                 Symbol::TsNbr(1),
                 Symbol::TsPlus,
@@ -194,11 +200,11 @@ mod tests {
                 Symbol::TsRParens,
                 Symbol::TsPlus,
                 Symbol::TsNbr(3),
-            ]
+            ])
         );
         assert_eq!(
             lexer(String::from("3+(1+2)"), get_rt()),
-            vec![
+            Ok(vec![
                 Symbol::TsNbr(3),
                 Symbol::TsPlus,
                 Symbol::TsLParens,
@@ -206,7 +212,7 @@ mod tests {
                 Symbol::TsPlus,
                 Symbol::TsNbr(2),
                 Symbol::TsRParens,
-            ]
+            ])
         );
     }
 
@@ -214,7 +220,7 @@ mod tests {
     fn complicated_brackets() {
         assert_eq!(
             lexer(String::from("(1+2)+(2*(3)+(5-6))"), get_rt()),
-            vec![
+            Ok(vec![
                 Symbol::TsLParens,
                 Symbol::TsNbr(1),
                 Symbol::TsPlus,
@@ -234,31 +240,39 @@ mod tests {
                 Symbol::TsNbr(6),
                 Symbol::TsRParens,
                 Symbol::TsRParens,
-            ]
+            ])
         );
     }
 
     #[test]
-    #[should_panic]
     fn error_no_end_bracket() {
-        lexer(String::from("(1"), get_rt());
+        assert_eq!(
+            lexer(String::from("(1"), get_rt()),
+            Err(String::from("Error: Incomplete syntax"))
+        );
     }
 
     #[test]
-    #[should_panic]
     fn error_empty_brackets() {
-        lexer(String::from("()"), get_rt());
+        assert_eq!(
+            lexer(String::from("()"), get_rt()),
+            Err(String::from("Error: Invalid syntax"))
+        );
     }
 
     #[test]
-    #[should_panic]
     fn error_no_2nd_operand() {
-        lexer(String::from("1+"), get_rt());
+        assert_eq!(
+            lexer(String::from("1+"), get_rt()),
+            Err(String::from("Error: Incomplete syntax"))
+        );
     }
 
     #[test]
-    #[should_panic]
     fn error_too_large_number() {
-        lexer(String::from("12345678901234567890"), get_rt());
+        assert_eq!(
+            lexer(String::from("12345678901234567890"), get_rt()),
+            Err(String::from("Error: Too large number"))
+        );
     }
 }
