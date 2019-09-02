@@ -68,26 +68,30 @@ fn multiple_operations() {
 fn simple_brackets() {
     assert_eq!(
         lexer(String::from("(1)"), get_rt()),
-        Ok(vec![Symbol::TsLParens, Symbol::TsNbr(1), Symbol::TsRParens])
+        Ok(vec![
+            Symbol::TsLBracket,
+            Symbol::TsNbr(1),
+            Symbol::TsRBracket
+        ])
     );
     assert_eq!(
         lexer(String::from("(1+2)"), get_rt()),
         Ok(vec![
-            Symbol::TsLParens,
+            Symbol::TsLBracket,
             Symbol::TsNbr(1),
             Symbol::TsPlus,
             Symbol::TsNbr(2),
-            Symbol::TsRParens,
+            Symbol::TsRBracket,
         ])
     );
     assert_eq!(
         lexer(String::from("(1+2)+3"), get_rt()),
         Ok(vec![
-            Symbol::TsLParens,
+            Symbol::TsLBracket,
             Symbol::TsNbr(1),
             Symbol::TsPlus,
             Symbol::TsNbr(2),
-            Symbol::TsRParens,
+            Symbol::TsRBracket,
             Symbol::TsPlus,
             Symbol::TsNbr(3),
         ])
@@ -97,11 +101,11 @@ fn simple_brackets() {
         Ok(vec![
             Symbol::TsNbr(3),
             Symbol::TsPlus,
-            Symbol::TsLParens,
+            Symbol::TsLBracket,
             Symbol::TsNbr(1),
             Symbol::TsPlus,
             Symbol::TsNbr(2),
-            Symbol::TsRParens,
+            Symbol::TsRBracket,
         ])
     );
 }
@@ -111,25 +115,25 @@ fn complicated_brackets() {
     assert_eq!(
         lexer(String::from("(1+2)+(2*(3)+(5-6))"), get_rt()),
         Ok(vec![
-            Symbol::TsLParens,
+            Symbol::TsLBracket,
             Symbol::TsNbr(1),
             Symbol::TsPlus,
             Symbol::TsNbr(2),
-            Symbol::TsRParens,
+            Symbol::TsRBracket,
             Symbol::TsPlus,
-            Symbol::TsLParens,
+            Symbol::TsLBracket,
             Symbol::TsNbr(2),
             Symbol::TsTimes,
-            Symbol::TsLParens,
+            Symbol::TsLBracket,
             Symbol::TsNbr(3),
-            Symbol::TsRParens,
+            Symbol::TsRBracket,
             Symbol::TsPlus,
-            Symbol::TsLParens,
+            Symbol::TsLBracket,
             Symbol::TsNbr(5),
             Symbol::TsLess,
             Symbol::TsNbr(6),
-            Symbol::TsRParens,
-            Symbol::TsRParens,
+            Symbol::TsRBracket,
+            Symbol::TsRBracket,
         ])
     );
 }

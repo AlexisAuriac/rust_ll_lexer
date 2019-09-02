@@ -1,7 +1,7 @@
 #[derive(Debug, PartialEq)]
 pub enum Symbol {
-    TsLParens,
-    TsRParens,
+    TsLBracket,
+    TsRBracket,
     TsPlus,
     TsLess,
     TsTimes,
@@ -14,8 +14,8 @@ pub enum Symbol {
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
 pub enum ExpectSym {
-    TsLParens,
-    TsRParens,
+    TsLBracket,
+    TsRBracket,
     TsPlus,
     TsLess,
     TsTimes,
@@ -63,8 +63,8 @@ pub fn get_symbol(s: &mut String) -> Result<(Symbol, usize), String> {
     let c = s.chars().next().unwrap();
 
     return match c {
-        '(' => Ok((Symbol::TsLParens, 1)),
-        ')' => Ok((Symbol::TsRParens, 1)),
+        '(' => Ok((Symbol::TsLBracket, 1)),
+        ')' => Ok((Symbol::TsRBracket, 1)),
         '+' => Ok((Symbol::TsPlus, 1)),
         '-' => Ok((Symbol::TsLess, 1)),
         '*' => Ok((Symbol::TsTimes, 1)),
@@ -77,8 +77,8 @@ pub fn get_symbol(s: &mut String) -> Result<(Symbol, usize), String> {
 
 pub fn sym_to_expect(sym: &Symbol) -> ExpectSym {
     return match sym {
-        Symbol::TsLParens => ExpectSym::TsLParens,
-        Symbol::TsRParens => ExpectSym::TsRParens,
+        Symbol::TsLBracket => ExpectSym::TsLBracket,
+        Symbol::TsRBracket => ExpectSym::TsRBracket,
         Symbol::TsPlus => ExpectSym::TsPlus,
         Symbol::TsLess => ExpectSym::TsLess,
         Symbol::TsTimes => ExpectSym::TsTimes,

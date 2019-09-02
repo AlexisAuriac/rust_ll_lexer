@@ -3,14 +3,18 @@ use std::collections::HashMap;
 use crate::symbol::ExpectSym;
 
 pub struct Rule {
-    pub sym1: ExpectSym,
-    pub sym2: ExpectSym,
-    pub res: Vec<(ExpectSym, bool)>,
+    pub genre: ExpectSym,
+    pub version: ExpectSym,
+    pub next: Vec<(ExpectSym, bool)>,
 }
 
 impl Rule {
-    pub fn new(sym1: ExpectSym, sym2: ExpectSym, res: Vec<(ExpectSym, bool)>) -> Rule {
-        Rule { sym1, sym2, res }
+    pub fn new(genre: ExpectSym, version: ExpectSym, next: Vec<(ExpectSym, bool)>) -> Rule {
+        Rule {
+            genre,
+            version,
+            next,
+        }
     }
 }
 
@@ -23,7 +27,7 @@ impl RuleTable {
         let mut table: HashMap<(ExpectSym, ExpectSym), Vec<(ExpectSym, bool)>> = HashMap::new();
 
         for rule in rules {
-            table.insert((rule.sym1, rule.sym2), rule.res);
+            table.insert((rule.genre, rule.version), rule.next);
         }
 
         return RuleTable { table };
@@ -31,9 +35,9 @@ impl RuleTable {
 
     pub fn get_res(
         self: &RuleTable,
-        sym1: ExpectSym,
-        sym2: ExpectSym,
+        genre: ExpectSym,
+        version: ExpectSym,
     ) -> Option<&Vec<(ExpectSym, bool)>> {
-        return self.table.get(&(sym1, sym2));
+        return self.table.get(&(genre, version));
     }
 }

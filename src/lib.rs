@@ -13,10 +13,10 @@ pub fn get_rt() -> RuleTable {
         ),
         Rule::new(
             ExpectSym::NtsExpr,
-            ExpectSym::TsLParens,
+            ExpectSym::TsLBracket,
             vec![
                 (ExpectSym::NtsExpr, false),
-                (ExpectSym::TsRParens, false),
+                (ExpectSym::TsRBracket, false),
                 (ExpectSym::NtsSign, true),
             ],
         ),
