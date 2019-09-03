@@ -55,8 +55,7 @@ pub fn get_rt() -> RuleTable<GramSym> {
 pub fn lexer<GS, LS>(
     mut s: String,
     rt: RuleTable<GS>,
-    get_sym: &Fn(&mut String) -> Result<(LS, usize), String>,
-    sym_lex_to_gram: &Fn(&LS) -> GS,
+    get_sym: &Fn(&mut String) -> Result<(LS, GS, usize), String>,
 ) -> Result<Vec<LS>, String>
 where
     GS: Eq + std::hash::Hash + Copy,
@@ -66,16 +65,15 @@ where
     let mut sym_stack: Vec<(GS, bool)> = rt.start.clone();
 
     while sym_stack.len() != 0 {
-        let (sym, size) = get_sym(&mut s)?;
-        let expect = sym_lex_to_gram(&sym);
+        let (sym, gram, size) = get_sym(&mut s)?;
         let (top, opt) = *sym_stack.last().unwrap();
 
-        if expect == top {
+        if gram == top {
             sym_stack.pop();
             s.replace_range(..size, "");
             syms.push(sym);
         } else {
-            match rt.get_res(top, expect) {
+            match rt.get_res(top, gram) {
                 Some(res_syms) => {
                     sym_stack.pop();
 
@@ -90,7 +88,7 @@ where
                     if opt {
                         sym_stack.pop();
                     } else {
-                        if expect == rt.end {
+                        if gram == rt.end {
                             return Err("Error: Incomplete syntax".to_string());
                         } else {
                             return Err("Error: Invalid syntax".to_string());
