@@ -1,12 +1,11 @@
 pub mod rule;
-pub mod symbol;
 
 use rule::RuleTable;
 
 pub fn lexer<GS, LS>(
     mut s: String,
     rt: RuleTable<GS>,
-    get_sym: &Fn(&mut String) -> Result<(LS, GS, usize), String>,
+    get_sym: &Fn(&String) -> Result<(LS, GS, usize), String>,
 ) -> Result<Vec<LS>, String>
 where
     GS: Eq + std::hash::Hash + Copy,
@@ -16,7 +15,7 @@ where
     let mut sym_stack: Vec<(GS, bool)> = rt.start.clone();
 
     while sym_stack.len() != 0 {
-        let (sym, gram, size) = get_sym(&mut s)?;
+        let (sym, gram, size) = get_sym(&s)?;
         let (top, opt) = *sym_stack.last().unwrap();
 
         if gram == top {

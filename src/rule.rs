@@ -1,7 +1,5 @@
 use std::collections::HashMap;
 
-// use crate::symbol::GramSym;
-
 pub struct Rule<GS>
 where
     GS: Eq + std::hash::Hash,

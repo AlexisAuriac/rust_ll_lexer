@@ -30,7 +30,7 @@ pub enum GramSym {
     NtsSign,
 }
 
-fn get_symbol_nbr(s: &mut String) -> Result<(LexSym, GramSym, usize), String> {
+fn get_symbol_nbr(s: &String) -> Result<(LexSym, GramSym, usize), String> {
     let mut nb: u32 = 0;
     let mut size = 0;
 
@@ -57,7 +57,7 @@ fn get_symbol_nbr(s: &mut String) -> Result<(LexSym, GramSym, usize), String> {
     return Ok((LexSym::TsNbr(nb), GramSym::TsNbr, size));
 }
 
-pub fn get_symbol(s: &mut String) -> Result<(LexSym, GramSym, usize), String> {
+pub fn get_symbol(s: &String) -> Result<(LexSym, GramSym, usize), String> {
     if s.len() == 0 {
         return Ok((LexSym::TsEos, GramSym::TsEos, 0));
     }
