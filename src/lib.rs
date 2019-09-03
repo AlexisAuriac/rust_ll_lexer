@@ -2,55 +2,55 @@ pub mod rule;
 pub mod symbol;
 
 use rule::{Rule, RuleTable};
-use symbol::{get_symbol, sym_to_expect, ExpectSym, Symbol};
+use symbol::{get_symbol, sym_to_expect, GramSym, LexSym};
 
 pub fn get_rt() -> RuleTable {
     return RuleTable::new(vec![
         Rule::new(
-            ExpectSym::NtsExpr,
-            ExpectSym::TsNbr,
-            vec![(ExpectSym::NtsSign, true)],
+            GramSym::NtsExpr,
+            GramSym::TsNbr,
+            vec![(GramSym::NtsSign, true)],
         ),
         Rule::new(
-            ExpectSym::NtsExpr,
-            ExpectSym::TsLBracket,
+            GramSym::NtsExpr,
+            GramSym::TsLBracket,
             vec![
-                (ExpectSym::NtsExpr, false),
-                (ExpectSym::TsRBracket, false),
-                (ExpectSym::NtsSign, true),
+                (GramSym::NtsExpr, false),
+                (GramSym::TsRBracket, false),
+                (GramSym::NtsSign, true),
             ],
         ),
         Rule::new(
-            ExpectSym::NtsSign,
-            ExpectSym::TsPlus,
-            vec![(ExpectSym::NtsExpr, false)],
+            GramSym::NtsSign,
+            GramSym::TsPlus,
+            vec![(GramSym::NtsExpr, false)],
         ),
         Rule::new(
-            ExpectSym::NtsSign,
-            ExpectSym::TsLess,
-            vec![(ExpectSym::NtsExpr, false)],
+            GramSym::NtsSign,
+            GramSym::TsLess,
+            vec![(GramSym::NtsExpr, false)],
         ),
         Rule::new(
-            ExpectSym::NtsSign,
-            ExpectSym::TsTimes,
-            vec![(ExpectSym::NtsExpr, false)],
+            GramSym::NtsSign,
+            GramSym::TsTimes,
+            vec![(GramSym::NtsExpr, false)],
         ),
         Rule::new(
-            ExpectSym::NtsSign,
-            ExpectSym::TsDivide,
-            vec![(ExpectSym::NtsExpr, false)],
+            GramSym::NtsSign,
+            GramSym::TsDivide,
+            vec![(GramSym::NtsExpr, false)],
         ),
         Rule::new(
-            ExpectSym::NtsSign,
-            ExpectSym::TsModulo,
-            vec![(ExpectSym::NtsExpr, false)],
+            GramSym::NtsSign,
+            GramSym::TsModulo,
+            vec![(GramSym::NtsExpr, false)],
         ),
     ]);
 }
 
-pub fn lexer(mut s: String, rt: RuleTable) -> Result<Vec<Symbol>, String> {
-    let mut syms: Vec<Symbol> = vec![];
-    let mut sym_stack: Vec<(ExpectSym, bool)> = vec![(ExpectSym::NtsExpr, false)];
+pub fn lexer(mut s: String, rt: RuleTable) -> Result<Vec<LexSym>, String> {
+    let mut syms: Vec<LexSym> = vec![];
+    let mut sym_stack: Vec<(GramSym, bool)> = vec![(GramSym::NtsExpr, false)];
 
     while sym_stack.len() != 0 {
         let (sym, size) = get_symbol(&mut s)?;
@@ -77,7 +77,7 @@ pub fn lexer(mut s: String, rt: RuleTable) -> Result<Vec<Symbol>, String> {
                     if opt {
                         sym_stack.pop();
                     } else {
-                        if expect == ExpectSym::TsEos {
+                        if expect == GramSym::TsEos {
                             return Err("Error: Incomplete syntax".to_string());
                         } else {
                             return Err("Error: Invalid syntax".to_string());

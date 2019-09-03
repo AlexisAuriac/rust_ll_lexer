@@ -1,12 +1,12 @@
 use ll_lexer::get_rt;
 use ll_lexer::lexer;
-use ll_lexer::symbol::Symbol;
+use ll_lexer::symbol::LexSym;
 
 #[test]
 fn single_value() {
     assert_eq!(
         lexer(String::from("1"), get_rt()),
-        Ok(vec![Symbol::TsNbr(1)])
+        Ok(vec![LexSym::TsNbr(1)])
     );
 }
 
@@ -14,7 +14,7 @@ fn single_value() {
 fn multi_digit_nbr() {
     assert_eq!(
         lexer(String::from("12"), get_rt()),
-        Ok(vec![Symbol::TsNbr(12)])
+        Ok(vec![LexSym::TsNbr(12)])
     );
 }
 
@@ -22,23 +22,23 @@ fn multi_digit_nbr() {
 fn simple_operation() {
     assert_eq!(
         lexer(String::from("12+3"), get_rt()),
-        Ok(vec![Symbol::TsNbr(12), Symbol::TsPlus, Symbol::TsNbr(3)])
+        Ok(vec![LexSym::TsNbr(12), LexSym::TsPlus, LexSym::TsNbr(3)])
     );
     assert_eq!(
         lexer(String::from("12-1234"), get_rt()),
-        Ok(vec![Symbol::TsNbr(12), Symbol::TsLess, Symbol::TsNbr(1234)])
+        Ok(vec![LexSym::TsNbr(12), LexSym::TsLess, LexSym::TsNbr(1234)])
     );
     assert_eq!(
         lexer(String::from("4*32"), get_rt()),
-        Ok(vec![Symbol::TsNbr(4), Symbol::TsTimes, Symbol::TsNbr(32)])
+        Ok(vec![LexSym::TsNbr(4), LexSym::TsTimes, LexSym::TsNbr(32)])
     );
     assert_eq!(
         lexer(String::from("12/4"), get_rt()),
-        Ok(vec![Symbol::TsNbr(12), Symbol::TsDivide, Symbol::TsNbr(4)])
+        Ok(vec![LexSym::TsNbr(12), LexSym::TsDivide, LexSym::TsNbr(4)])
     );
     assert_eq!(
         lexer(String::from("12%4"), get_rt()),
-        Ok(vec![Symbol::TsNbr(12), Symbol::TsModulo, Symbol::TsNbr(4)])
+        Ok(vec![LexSym::TsNbr(12), LexSym::TsModulo, LexSym::TsNbr(4)])
     );
 }
 
@@ -47,19 +47,19 @@ fn multiple_operations() {
     assert_eq!(
         lexer(String::from("10+15-10*13+6/3%4"), get_rt()),
         Ok(vec![
-            Symbol::TsNbr(10),
-            Symbol::TsPlus,
-            Symbol::TsNbr(15),
-            Symbol::TsLess,
-            Symbol::TsNbr(10),
-            Symbol::TsTimes,
-            Symbol::TsNbr(13),
-            Symbol::TsPlus,
-            Symbol::TsNbr(6),
-            Symbol::TsDivide,
-            Symbol::TsNbr(3),
-            Symbol::TsModulo,
-            Symbol::TsNbr(4),
+            LexSym::TsNbr(10),
+            LexSym::TsPlus,
+            LexSym::TsNbr(15),
+            LexSym::TsLess,
+            LexSym::TsNbr(10),
+            LexSym::TsTimes,
+            LexSym::TsNbr(13),
+            LexSym::TsPlus,
+            LexSym::TsNbr(6),
+            LexSym::TsDivide,
+            LexSym::TsNbr(3),
+            LexSym::TsModulo,
+            LexSym::TsNbr(4),
         ])
     );
 }
@@ -69,43 +69,43 @@ fn simple_brackets() {
     assert_eq!(
         lexer(String::from("(1)"), get_rt()),
         Ok(vec![
-            Symbol::TsLBracket,
-            Symbol::TsNbr(1),
-            Symbol::TsRBracket
+            LexSym::TsLBracket,
+            LexSym::TsNbr(1),
+            LexSym::TsRBracket
         ])
     );
     assert_eq!(
         lexer(String::from("(1+2)"), get_rt()),
         Ok(vec![
-            Symbol::TsLBracket,
-            Symbol::TsNbr(1),
-            Symbol::TsPlus,
-            Symbol::TsNbr(2),
-            Symbol::TsRBracket,
+            LexSym::TsLBracket,
+            LexSym::TsNbr(1),
+            LexSym::TsPlus,
+            LexSym::TsNbr(2),
+            LexSym::TsRBracket,
         ])
     );
     assert_eq!(
         lexer(String::from("(1+2)+3"), get_rt()),
         Ok(vec![
-            Symbol::TsLBracket,
-            Symbol::TsNbr(1),
-            Symbol::TsPlus,
-            Symbol::TsNbr(2),
-            Symbol::TsRBracket,
-            Symbol::TsPlus,
-            Symbol::TsNbr(3),
+            LexSym::TsLBracket,
+            LexSym::TsNbr(1),
+            LexSym::TsPlus,
+            LexSym::TsNbr(2),
+            LexSym::TsRBracket,
+            LexSym::TsPlus,
+            LexSym::TsNbr(3),
         ])
     );
     assert_eq!(
         lexer(String::from("3+(1+2)"), get_rt()),
         Ok(vec![
-            Symbol::TsNbr(3),
-            Symbol::TsPlus,
-            Symbol::TsLBracket,
-            Symbol::TsNbr(1),
-            Symbol::TsPlus,
-            Symbol::TsNbr(2),
-            Symbol::TsRBracket,
+            LexSym::TsNbr(3),
+            LexSym::TsPlus,
+            LexSym::TsLBracket,
+            LexSym::TsNbr(1),
+            LexSym::TsPlus,
+            LexSym::TsNbr(2),
+            LexSym::TsRBracket,
         ])
     );
 }
@@ -115,25 +115,25 @@ fn complicated_brackets() {
     assert_eq!(
         lexer(String::from("(1+2)+(2*(3)+(5-6))"), get_rt()),
         Ok(vec![
-            Symbol::TsLBracket,
-            Symbol::TsNbr(1),
-            Symbol::TsPlus,
-            Symbol::TsNbr(2),
-            Symbol::TsRBracket,
-            Symbol::TsPlus,
-            Symbol::TsLBracket,
-            Symbol::TsNbr(2),
-            Symbol::TsTimes,
-            Symbol::TsLBracket,
-            Symbol::TsNbr(3),
-            Symbol::TsRBracket,
-            Symbol::TsPlus,
-            Symbol::TsLBracket,
-            Symbol::TsNbr(5),
-            Symbol::TsLess,
-            Symbol::TsNbr(6),
-            Symbol::TsRBracket,
-            Symbol::TsRBracket,
+            LexSym::TsLBracket,
+            LexSym::TsNbr(1),
+            LexSym::TsPlus,
+            LexSym::TsNbr(2),
+            LexSym::TsRBracket,
+            LexSym::TsPlus,
+            LexSym::TsLBracket,
+            LexSym::TsNbr(2),
+            LexSym::TsTimes,
+            LexSym::TsLBracket,
+            LexSym::TsNbr(3),
+            LexSym::TsRBracket,
+            LexSym::TsPlus,
+            LexSym::TsLBracket,
+            LexSym::TsNbr(5),
+            LexSym::TsLess,
+            LexSym::TsNbr(6),
+            LexSym::TsRBracket,
+            LexSym::TsRBracket,
         ])
     );
 }

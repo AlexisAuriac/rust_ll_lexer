@@ -1,15 +1,15 @@
 use std::collections::HashMap;
 
-use crate::symbol::ExpectSym;
+use crate::symbol::GramSym;
 
 pub struct Rule {
-    pub genre: ExpectSym,
-    pub version: ExpectSym,
-    pub next: Vec<(ExpectSym, bool)>,
+    pub genre: GramSym,
+    pub version: GramSym,
+    pub next: Vec<(GramSym, bool)>,
 }
 
 impl Rule {
-    pub fn new(genre: ExpectSym, version: ExpectSym, next: Vec<(ExpectSym, bool)>) -> Rule {
+    pub fn new(genre: GramSym, version: GramSym, next: Vec<(GramSym, bool)>) -> Rule {
         Rule {
             genre,
             version,
@@ -19,12 +19,12 @@ impl Rule {
 }
 
 pub struct RuleTable {
-    table: HashMap<(ExpectSym, ExpectSym), Vec<(ExpectSym, bool)>>,
+    table: HashMap<(GramSym, GramSym), Vec<(GramSym, bool)>>,
 }
 
 impl RuleTable {
     pub fn new(rules: Vec<Rule>) -> RuleTable {
-        let mut table: HashMap<(ExpectSym, ExpectSym), Vec<(ExpectSym, bool)>> = HashMap::new();
+        let mut table: HashMap<(GramSym, GramSym), Vec<(GramSym, bool)>> = HashMap::new();
 
         for rule in rules {
             table.insert((rule.genre, rule.version), rule.next);
@@ -35,9 +35,9 @@ impl RuleTable {
 
     pub fn get_res(
         self: &RuleTable,
-        genre: ExpectSym,
-        version: ExpectSym,
-    ) -> Option<&Vec<(ExpectSym, bool)>> {
+        genre: GramSym,
+        version: GramSym,
+    ) -> Option<&Vec<(GramSym, bool)>> {
         return self.table.get(&(genre, version));
     }
 }

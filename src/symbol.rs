@@ -1,5 +1,5 @@
 #[derive(Debug, PartialEq)]
-pub enum Symbol {
+pub enum LexSym {
     TsLBracket,
     TsRBracket,
     TsPlus,
@@ -13,7 +13,7 @@ pub enum Symbol {
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
-pub enum ExpectSym {
+pub enum GramSym {
     TsLBracket,
     TsRBracket,
     TsPlus,
@@ -28,7 +28,7 @@ pub enum ExpectSym {
     NtsSign,
 }
 
-fn get_symbol_nbr(s: &mut String) -> Result<(Symbol, usize), String> {
+fn get_symbol_nbr(s: &mut String) -> Result<(LexSym, usize), String> {
     let mut nb: u32 = 0;
     let mut size = 0;
 
@@ -52,40 +52,40 @@ fn get_symbol_nbr(s: &mut String) -> Result<(Symbol, usize), String> {
         size += 1;
     }
 
-    return Ok((Symbol::TsNbr(nb), size));
+    return Ok((LexSym::TsNbr(nb), size));
 }
 
-pub fn get_symbol(s: &mut String) -> Result<(Symbol, usize), String> {
+pub fn get_symbol(s: &mut String) -> Result<(LexSym, usize), String> {
     if s.len() == 0 {
-        return Ok((Symbol::TsEos, 0));
+        return Ok((LexSym::TsEos, 0));
     }
 
     let c = s.chars().next().unwrap();
 
     return match c {
-        '(' => Ok((Symbol::TsLBracket, 1)),
-        ')' => Ok((Symbol::TsRBracket, 1)),
-        '+' => Ok((Symbol::TsPlus, 1)),
-        '-' => Ok((Symbol::TsLess, 1)),
-        '*' => Ok((Symbol::TsTimes, 1)),
-        '/' => Ok((Symbol::TsDivide, 1)),
-        '%' => Ok((Symbol::TsModulo, 1)),
+        '(' => Ok((LexSym::TsLBracket, 1)),
+        ')' => Ok((LexSym::TsRBracket, 1)),
+        '+' => Ok((LexSym::TsPlus, 1)),
+        '-' => Ok((LexSym::TsLess, 1)),
+        '*' => Ok((LexSym::TsTimes, 1)),
+        '/' => Ok((LexSym::TsDivide, 1)),
+        '%' => Ok((LexSym::TsModulo, 1)),
         '0'...'9' => get_symbol_nbr(s),
-        _ => Ok((Symbol::TsInvalid, 1)),
+        _ => Ok((LexSym::TsInvalid, 1)),
     };
 }
 
-pub fn sym_to_expect(sym: &Symbol) -> ExpectSym {
+pub fn sym_to_expect(sym: &LexSym) -> GramSym {
     return match sym {
-        Symbol::TsLBracket => ExpectSym::TsLBracket,
-        Symbol::TsRBracket => ExpectSym::TsRBracket,
-        Symbol::TsPlus => ExpectSym::TsPlus,
-        Symbol::TsLess => ExpectSym::TsLess,
-        Symbol::TsTimes => ExpectSym::TsTimes,
-        Symbol::TsDivide => ExpectSym::TsDivide,
-        Symbol::TsModulo => ExpectSym::TsModulo,
-        Symbol::TsNbr { .. } => ExpectSym::TsNbr,
-        Symbol::TsEos => ExpectSym::TsEos,
-        Symbol::TsInvalid => ExpectSym::TsInvalid,
+        LexSym::TsLBracket => GramSym::TsLBracket,
+        LexSym::TsRBracket => GramSym::TsRBracket,
+        LexSym::TsPlus => GramSym::TsPlus,
+        LexSym::TsLess => GramSym::TsLess,
+        LexSym::TsTimes => GramSym::TsTimes,
+        LexSym::TsDivide => GramSym::TsDivide,
+        LexSym::TsModulo => GramSym::TsModulo,
+        LexSym::TsNbr { .. } => GramSym::TsNbr,
+        LexSym::TsEos => GramSym::TsEos,
+        LexSym::TsInvalid => GramSym::TsInvalid,
     };
 }
