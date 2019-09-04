@@ -5,7 +5,7 @@ use rule::RuleTable;
 pub fn lexer<GS, LS>(
     mut s: String,
     rt: RuleTable<GS>,
-    get_sym: &Fn(&String) -> Result<(LS, GS, usize), String>,
+    get_sym: &Fn(&str) -> Result<(LS, GS, usize), String>,
 ) -> Result<Vec<LS>, String>
 where
     GS: Eq + std::hash::Hash + Copy,

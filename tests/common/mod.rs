@@ -30,7 +30,42 @@ pub enum GramSym {
     NtsSign,
 }
 
-fn get_symbol_nbr(s: &String) -> Result<(LexSym, GramSym, usize), String> {
+fn get_nb_spaces(s: &str) -> usize {
+    let mut nb_spaces = 0;
+
+    for c in s.chars() {
+        if !c.is_whitespace() {
+            break;
+        }
+
+        nb_spaces += 1;
+    }
+
+    return nb_spaces;
+}
+
+fn get_sub_or_add_symbol(s: &str) -> Result<(LexSym, GramSym, usize), String> {
+    let mut addition = true;
+    let mut size = 0;
+
+    for c in s.chars() {
+        match c {
+            '+' => {}
+            '-' => addition = !addition,
+            _ => break,
+        };
+
+        size += 1;
+    }
+
+    if addition {
+        return Ok((LexSym::TsPlus, GramSym::TsPlus, size));
+    } else {
+        return Ok((LexSym::TsLess, GramSym::TsLess, size));
+    }
+}
+
+fn get_symbol_nbr(s: &str) -> Result<(LexSym, GramSym, usize), String> {
     let mut nb: u32 = 0;
     let mut size = 0;
 
@@ -57,24 +92,26 @@ fn get_symbol_nbr(s: &String) -> Result<(LexSym, GramSym, usize), String> {
     return Ok((LexSym::TsNbr(nb), GramSym::TsNbr, size));
 }
 
-pub fn get_symbol(s: &String) -> Result<(LexSym, GramSym, usize), String> {
+pub fn get_symbol(s: &str) -> Result<(LexSym, GramSym, usize), String> {
     if s.len() == 0 {
         return Ok((LexSym::TsEos, GramSym::TsEos, 0));
     }
 
-    let c = s.chars().next().unwrap();
+    let nb_spaces = get_nb_spaces(s);
+    let c = s.chars().nth(nb_spaces).unwrap();
 
-    return match c {
-        '(' => Ok((LexSym::TsLBracket, GramSym::TsLBracket, 1)),
-        ')' => Ok((LexSym::TsRBracket, GramSym::TsRBracket, 1)),
-        '+' => Ok((LexSym::TsPlus, GramSym::TsPlus, 1)),
-        '-' => Ok((LexSym::TsLess, GramSym::TsLess, 1)),
-        '*' => Ok((LexSym::TsTimes, GramSym::TsTimes, 1)),
-        '/' => Ok((LexSym::TsDivide, GramSym::TsDivide, 1)),
-        '%' => Ok((LexSym::TsModulo, GramSym::TsModulo, 1)),
-        '0'...'9' => get_symbol_nbr(s),
-        _ => Ok((LexSym::TsInvalid, GramSym::TsInvalid, 1)),
+    let (lex, gram, size) = match c {
+        '(' => (LexSym::TsLBracket, GramSym::TsLBracket, 1),
+        ')' => (LexSym::TsRBracket, GramSym::TsRBracket, 1),
+        '+' | '-' => get_sub_or_add_symbol(&s[nb_spaces..])?,
+        '*' => (LexSym::TsTimes, GramSym::TsTimes, 1),
+        '/' => (LexSym::TsDivide, GramSym::TsDivide, 1),
+        '%' => (LexSym::TsModulo, GramSym::TsModulo, 1),
+        '0'...'9' => get_symbol_nbr(&s[nb_spaces..])?,
+        _ => (LexSym::TsInvalid, GramSym::TsInvalid, 1),
     };
+
+    return Ok((lex, gram, size + nb_spaces));
 }
 
 pub fn get_rt() -> RuleTable<GramSym> {
